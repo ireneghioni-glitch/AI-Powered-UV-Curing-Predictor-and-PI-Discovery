@@ -1,4 +1,4 @@
-# Phase 2 Development Log: From Molecular Images to Embeddings
+# Phase 2 - Step 3: Embeddings Extraction Development Log
 
 ## Document Purpose
 
