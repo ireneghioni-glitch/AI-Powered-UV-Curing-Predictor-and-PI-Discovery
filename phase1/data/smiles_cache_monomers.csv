@@ -1,0 +1,11 @@
+name,smiles
+TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C
+DEGDA,C=C(C)C(=O)OCCOCCOC(=O)C(=C)C
+HDDA,C=CC(=O)OCCCCCCOC(=O)C=C
+PEGDA,C=C(C)C(=O)OCCOCCOCCOC(=O)C(=C)C
+HEMA,C=C(C)C(=O)OCCO
+MMA,C=C(C)C(=O)OC
+Butyl acrylate,C=CC(=O)OCCCC
+Acrylic acid,C=CC(=O)O
+Styrene,C=CC1=CC=CC=C1
+IBOA,C=CC(=O)OC1C2CC(C2)C1(C)C

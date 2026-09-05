@@ -2,10 +2,10 @@
 What does this module do?
 =========================
 
-It takes a SMILES string (e.g., "O=C(c1ccccc1)c2ccccc2" for benzophenone) 
-and converts it into a fixed-size, grayscale 2D image (e.g., 224x224 pixels). 
+It takes a SMILES string (e.g., "C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C" for TMPTA)
+and converts it into a fixed-size, grayscale 2D image (e.g., 224x224 pixels).
 
-The image is a drawing of the molecular structure, with atoms and bonds 
+The image is a drawing of the molecular structure, with atoms and bonds
 represented graphically.
 '''
 
@@ -23,14 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 IMAGES_DIR = BASE_DIR / "images"
 
-INPUT_CSV = DATA_DIR / "molecules_PIs.csv"
+INPUT_CSV = DATA_DIR / "molecules_monomers.csv"
 
 # Compressed NumPy array of all images (shape: N, 224, 224)
-OUTPUT_NPZ = IMAGES_DIR / "molecular_images.npz"
+OUTPUT_NPZ = IMAGES_DIR / "molecular_images_monomers.npz"
 # Metadata: name, smiles, role, augment
-OUTPUT_META = DATA_DIR / "molecular_metadata.csv"
-IMG_SIZE = (224, 224) # It is the standard for most pre-trained CNNs (ResNet, MobileNet).
-PREVIEW = DATA_DIR / "preview.png"
+OUTPUT_META = DATA_DIR / "molecular_metadata_monomers.csv"
+IMG_SIZE = (224, 224)  # Standard for most pre-trained CNNs (ResNet, MobileNet).
+PREVIEW = DATA_DIR / "preview_monomers.png"
 
 
 # ==================== FUNCTIONS ====================
@@ -39,37 +39,38 @@ PREVIEW = DATA_DIR / "preview.png"
 def smiles_to_greyscale(smiles):
     '''
     Generate 2D in gray scale image of molecule from SMILES.
-    Pattern recognition (bonds, rings) does not require color, 
+    Pattern recognition (bonds, rings) does not require color,
     so we use less memory by doing this.'''
     # transform smiles string into molecule obj
     mol = Chem.MolFromSmiles(smiles)
     # in case it fails, raise of ValueError
     if mol is None:
         raise ValueError(f'Invalid SMILES: {smiles}')
-    # draw 2D structure (RGB with 3 chennels by default)
+    # draw 2D structure (RGB with 3 channels by default)
     img = Draw.MolToImage(mol, size=IMG_SIZE)
     # reduces image at 1 channel (gray scale)
     img_np = np.array(img)
     gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
     return gray
 
+
 # rotate molecule
 def augment_rotations(image):
     '''
-    It takes an input image and rotates it around the 
+    It takes an input image and rotates it around the
     center by 90, 180, and 270 degrees.
 
-    To increase the variety of training examples and make the CNN invariant to rotation, 
-    we apply rotations of 90°, 180°, and 270°. 
-    For molecules, rotating the drawing does not change the chemical structure; 
+    To increase the variety of training examples and make the CNN invariant to rotation,
+    we apply rotations of 90°, 180°, and 270°.
+    For molecules, rotating the drawing does not change the chemical structure;
     it only changes the orientation in the image.
-    
+
     Returns a list of 3 images.'''
     h, w = image.shape
     # Divide the dimensions by 2, discarding the decimals, to get center coordinates.
     center = (w // 2, h // 2)
-    # In image processing, the array dimensions are expressed as (height, width), 
-    # whereas screen coordinates use the standard Cartesian system (x, y) - that is, (width, height). 
+    # In image processing, the array dimensions are expressed as (height, width),
+    # whereas screen coordinates use the standard Cartesian system (x, y) - that is, (width, height).
     # For this reason, w is placed first.
     rotated = []
     for angle in [90, 180, 270]:
@@ -77,6 +78,7 @@ def augment_rotations(image):
         rot = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_LINEAR)
         rotated.append(rot)
     return rotated
+
 
 # process one row of CSV (image + rotations)
 def process_molecule_row(row):
@@ -96,11 +98,11 @@ def process_molecule_row(row):
         print(f'    [ERROR] Error processing {name}: {e}')
         return []
 
-    # For each rotation, it creates a record with an 'augment' flag 
+    # For each rotation, it creates a record with an 'augment' flag
     # indicating whether it is original or rotated.
     records = [
         {
-            'image': orig, 
+            'image': orig,
             'name': name,
             'smiles': smiles,
             'role': role,
@@ -117,6 +119,7 @@ def process_molecule_row(row):
         })
     return records
 
+
 def show_preview(images, meta, n=4):
     import matplotlib.pyplot as plt
     fig, axes = plt.subplots(1, n, figsize=(12, 3))
@@ -128,6 +131,7 @@ def show_preview(images, meta, n=4):
     plt.savefig(PREVIEW, dpi=100)
     print(f"   Preview saved to {PREVIEW}")
 
+
 # main function
 def main():
     '''
@@ -137,7 +141,7 @@ def main():
     df = pd.read_csv(INPUT_CSV)
     print(f'Found {len(df)} molecules.')
 
-    # Process each row by calling process_molecule_row 
+    # Process each row by calling process_molecule_row
     # and accumulate the results in all_data.
     all_data = []
     for idx, row in df.iterrows():
@@ -146,9 +150,9 @@ def main():
 
     # Extracts the images as NumPy arrays and the metadata as a DataFrame.
     images = np.array([rec['image'] for rec in all_data], dtype=np.uint8)
-    meta = pd.DataFrame([{k: v for k, v in rec.items() if k!='image'} for rec in all_data])
+    meta = pd.DataFrame([{k: v for k, v in rec.items() if k != 'image'} for rec in all_data])
 
-    # Save everything using `np.savez_compressed` (it takes up little space) 
+    # Save everything using `np.savez_compressed` (it takes up little space)
     # along with the metadata CSV.
     np.savez_compressed(OUTPUT_NPZ, images=images)
     meta.to_csv(OUTPUT_META, index=False)
