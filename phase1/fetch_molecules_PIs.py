@@ -1,7 +1,14 @@
+'''
+IMPORTANT!
+This script has to be run again AFTER EACH TIME THE LIST `molecules_config`
+IS UPDATED WITH NEW MOLECULES.
+'''
+
 import time
 import pandas as pd
 import requests
 from pathlib import Path
+
 
 # ==================== CONFIGURATION ====================
 
@@ -10,8 +17,28 @@ DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 OUTPUT_PI_CSV = DATA_DIR / "molecules_PIs.csv"
+CACHE_FILE = DATA_DIR / "smiles_cache_PIs.csv"
 
-# ==================== FUNZIONE PER OTTENERE SMILES ====================
+
+# ==================== CACHE FUNCTIONS ====================
+
+def load_cache():
+    if CACHE_FILE.exists():
+        return pd.read_csv(CACHE_FILE)
+    return pd.DataFrame(columns=["name", "smiles"])
+
+def save_cache(df):
+    df.to_csv(CACHE_FILE, index=False)
+
+def _save_to_cache(cache_df, name, smiles):
+    """Helper function to save a found SMILES to cache."""
+    if name and smiles:
+        new_row = pd.DataFrame([[name, smiles]], columns=["name", "smiles"])
+        updated_df = pd.concat([cache_df, new_row], ignore_index=True)
+        save_cache(updated_df)
+
+
+# ==================== FUNCTIONS ====================
 
 def get_smiles_from_cid(cid):
     """Retrieves the Canonical SMILES for a CID using the PubChem REST API."""
@@ -41,11 +68,21 @@ def get_cid_from_name(name):
 def get_smiles_robust(primary_names, alt_name=None):
     """
     Search for the SMILES:
-    1. Try each primary_name to obtain the CID, then the SMILES.
-    2. If that fails, try the alt_name.
-    3. Manual fallback for known molecules (known CID + SMILES).
+    1. Check cache first.
+    2. Try each primary_name (manual fallback + API).
+    3. If that fails, try the alt_name.
+    4. Save to cache when found.
     """
-    # Manual fallback for the most common molecules
+    # 1. LOAD CACHE
+    cache_df = load_cache()
+
+    # 2. CHECK CACHE FIRST
+    for name in primary_names + ([alt_name] if alt_name else []):
+        if name and name in cache_df['name'].values:
+            print(f'    [CACHE] Found {name} in cache')
+            return cache_df[cache_df['name'] == name]['smiles'].iloc[0], name
+
+    # 3. MANUAL FALLBACK DICTIONARY
     manual_smiles = {
         "Irgacure 651": "COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
         "Darocur 1173": "CC(C)(O)C(=O)C1=CC=CC=C1",
@@ -86,48 +123,69 @@ def get_smiles_robust(primary_names, alt_name=None):
         "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
     }
 
-    # Test each primary name (trade name)
+    # 4. SEARCH PRIMARY NAMES
     for primary in primary_names:
         print(f'Searching for {primary}...')
-        if primary in manual_smiles:
-            print(f'    [OK] Found in manual fallback')
-            return manual_smiles[primary], primary
 
-        # Get CID from name
+        # Manual fallback
+        if primary in manual_smiles:
+            smiles = manual_smiles[primary]
+            used_name = primary
+            print(f'    [OK] Found in manual fallback')
+            _save_to_cache(cache_df, used_name, smiles)
+            return smiles, used_name
+
+        # API search (get CID from name)
         cid = get_cid_from_name(primary)
         if cid:
             smiles = get_smiles_from_cid(cid)
             if smiles:
+                used_name = primary
                 print(f'    [OK] Found via CID {cid}')
-                return smiles, primary
+                _save_to_cache(cache_df, used_name, smiles)
+                return smiles, used_name
             else:
                 print(f'    [WARN] CID {cid} has no SMILES')
         else:
             print(f'    [WARN] No CID found for {primary}')
 
-    # Fallback on alt_name (IUPAC)
+    # 5. FALLBACK ON ALT_NAME (IUPAC)
     if alt_name:
         print(f'    [INFO] Fallback on {alt_name}...')
+
         if alt_name in manual_smiles:
+            smiles = manual_smiles[alt_name]
+            used_name = alt_name
             print(f'    [OK] Found in manual fallback')
-            return manual_smiles[alt_name], alt_name
+            _save_to_cache(cache_df, used_name, smiles)
+            return smiles, used_name
 
         cid = get_cid_from_name(alt_name)
         if cid:
             smiles = get_smiles_from_cid(cid)
             if smiles:
+                used_name = alt_name
                 print(f'    [OK] Found via CID {cid}')
-                return smiles, alt_name
+                _save_to_cache(cache_df, used_name, smiles)
+                return smiles, used_name
             else:
                 print(f'    [WARN] CID {cid} has no SMILES')
         else:
             print(f'    [WARN] No CID found for {alt_name}')
 
+    # 6. NOT FOUND
     print(f'    No SMILES found for {", ".join(primary_names)} nor {alt_name}; molecule skipped.')
     return None, None
 
 
-# ==================== MOLECULES LIST (unchanged) ====================
+# ==================== MOLECULES LIST ====================
+
+'''
+IMPORTANT!
+When adding new PIs, specify trade name(s) as `primary_names` and
+insert value None as `alt_name`,
+or viceversa.
+'''
 
 molecules_config = [
     # ---------- TYPE I (Cleavage Photoinitiators) ----------
