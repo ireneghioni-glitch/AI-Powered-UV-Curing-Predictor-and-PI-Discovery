@@ -453,6 +453,29 @@ Why larger hidden layers?
 criterion = nn.MSELoss()  # Mean Squared Error for regression
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 ```
+**What is Adam?**
+Adam (Adaptive Moment Estimation) is an optimization algorithm for training neural networks.  It is the successor to SGD (Stochastic Gradient Descent) and combines the advantages of two other algorithms:
+* Momentum – accelerates convergence in consistent directions and smooths out oscillations.
+* RMSProp – automatically adapts the learning rate for each parameter.
+In practice, Adam determines how much and in what way to update each model weight based on the gradient calculated during backpropagation.
+It is the most widely used optimizer because it performs well on almost all problems with minimal hyperparameter tuning.
+
+> The learning rate is one of the most critical parameters. If it is too high, the model "overshoots" the minimum and fails to converge. If it is too low, training is extremely slow. A value of 0.01 is high for a model with 336k parameters; in the guide, I recommend 0.001 (which is more conservative). You can try both and see which one converges better.
+
+_How Adam works_  
+For each model weight, Adam maintains two quantities:
+* **m** (first moment): moving average of gradients → acts as momentum, accelerating in consistent directions.
+* **v** (second moment): moving average of squared gradients → adapts the learning rate for each weight (so weights with large gradients are updated with smaller steps, and vice versa).
+
+At each step, Adam:  
+* Calculates the batch gradient.
+* Updates m and v.
+* Corrects m and v for initial bias (since they start at zero).
+* Updates the weights:
+```math
+weight = weight - lr * m / (sqrt(v) + epsilon)
+```
+The result: a **stable, fast, and adaptive update for each weight, without needing to manually tune the learning rate for each layer**.
 
 ##### Step 3.9: Training Loop
 ```python

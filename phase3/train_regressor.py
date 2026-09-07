@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader, TensorDataset
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 
+from model import CuringPredictorNet
+
 
 # ==================== CONFIGURATION ====================
 
@@ -219,5 +221,209 @@ print(f"Target values shape: {y.shape}")
 print(f"Min: {y.min():.2f}%, Max: {y.max():.2f}%")
 
 
-# 3.5 paragraph
 # ==================== TRAIN/TEST SPLIT ====================
+'''
+We split the combined dataset into training and test sets.
+
+Current split: Train (80%) + Test (20%) — simplified for MVP.
+In future, a Validation set will be added for early stopping and hyperparameter tuning
+(e.g., Train 70%, Validation 15%, Test 15%) to follow standard ML best practices.
+'''
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+print("Dataset successfully splitted for training and testing.")
+print(f"    Train set: {X_train.shape[0]} samples")
+print(f"    Test set: {X_test.shape[0]} samples")
+
+
+# ==================== TENSORS & DATALOADERS ====================
+'''
+NumPy data is "raw" and not optimized for deep learning.
+We convert them into PyTorch data structures designed 
+to be efficient during training.
+
+PyTorch trains models using mini-batches (groups of samples) 
+for two reasons:
+    - Efficiency: calculating the gradient on an entire batch 
+      (e.g., 64 samples) is faster than doing so one sample at 
+      a time (GPUs are optimized for vector operations).
+    - Stability: the gradient calculated on a batch is less 
+      "noisy," and convergence is more stable.
+This code block prepares the data for batch processing.
+
+Tensors can be moved to GPUs, support autograd (automatic 
+gradient calculation), and are optimized for mathematical operations.
+'''
+# convert to PyTorch tensors
+X_train_t = torch.tensor(X_train, dtype=torch.float32)
+X_test_t = torch.tensor(X_test, dtype=torch.float32)
+# Specify that the values ​​are 32-bit floating-point numbers 
+# (the standard for deep learning).
+'''
+Reshape the tensor. 
+-1 means "automatically infer the dimension," and 1 means 
+"one column." Thus, an array with shape (N,) (a vector) 
+becomes (N, 1) (a matrix with one column). Why? PyTorch expects the 
+model output to have the shape (batch_size, output_dim). 
+If output_dim = 1, it must be an (N, 1) tensor, not (N,).'''
+y_train_t = torch.tensor(y_train, dtype=torch.float32).view(-1, 1)
+y_test_t = torch.tensor(y_test, dtype=torch.float32).view(-1, 1)
+
+# create datasets
+'''
+It wraps the (X, y) pairs into a single object. 
+When the dataset is iterated, it returns an (input, target) tuple. 
+This makes the code cleaner and more manageable.'''
+train_dataset = TensorDataset(X_train_t, y_train_t)
+test_dataset = TensorDataset(X_test_t, y_test_t)
+
+# create DataLoaders
+'''
+Each batch will contain 64 samples. 
+The training dataset (7,168 samples) will be 
+divided into ceil(7,168/64) = 112 batches.'''
+BATCH_SIZE = 64
+'''
+64 is a common compromise between speed and stability. 
+It is large enough to leverage GPUs (for efficient 
+vector calculations) and reduce gradient noise, yet 
+small enough to fit in memory and provide frequent updates. 
+It is an empirical value that works well for medium-sized 
+datasets (~9,000 samples).'''
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+'''
+Important for training: shuffle the samples at each epoch. 
+This prevents the model from learning the order of the data 
+(e.g., if the data is sorted by PI type, the model might learn 
+to "predict" based on the order rather than the features).'''
+test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
+'''
+For the test, the order does not matter because there is no 
+training, and maintaining the order aids reproducibility.'''
+# Shuffling: Solves model bias, memorization, and poor convergence 
+# by optimizing model accuracy and loss trajectory.
+
+print(f"Train batches: {len(train_loader)}")
+print(f"Test batches: {len(test_loader)}")
+
+
+# ==================== MODEL ARCHITECTURE ====================
+# model initiation
+# shape[1] is the number of features per sample 
+# → 2560 (1280 PI + 1280 Monomer).
+input_dim = X_train.shape[1]    # 2560
+model = CuringPredictorNet(input_dim)
+print(model)
+'''
+Calculate the total number of trainable 
+parameters (weights + biases) of the model. 
+p.numel() returns the number of elements 
+in each parameter tensor.'''
+print(f"Total parameters: {sum(p.numel() 
+                               for p in model.parameters())}")
+
+# ==================== LOSS & OPTIMIZER ====================
+criterion = nn.MSELoss() # Mean Squared Error Regression
+optimizer = optim.Adam(model.parameters(), lr=0.01)
+'''
+model.parameters() - It tells the optimizer which weights to update.
+lr=0.01 - Learning rate. It controls the size of the steps Adam takes 
+          toward the minimum of the loss function.
+'''
+
+# ==================== TRAINING LOOP ====================
+'''
+The training loop executes one training epoch:
+"Take all the samples from the dataset (divided into 
+batches), pass them through the model, calculate the 
+error, and adjust the weights to reduce the error."
+'''
+# An epoch is a complete pass of ALL training data through 
+# the model, from the first sample to the last.
+def train_epoch(model, loader, criterion, optimizer):
+    # put the model into training mode
+    model.train()
+    # Initialize a variable to accumulate the total 
+    # loss across all batches. 
+    # At the end, we will divide it by the number of 
+    # samples to obtain the average loss for the epoch.
+    running_loss = 0.0
+    # loader is the created DataLoader
+    for batch_X, batch_y in loader:
+        # Resets the accumulated gradients in the model to zero.
+        # In PyTorch, gradients are accumulated (summed) with each 
+        # call to `loss.backward()`. 
+        # If we did not zero them out, the gradients from the previous 
+        # batch would be added to those of the current batch, leading 
+        # to incorrect results.
+        optimizer.zero_grad()
+        # Pass the input batch through the neural network (forward pass). 
+        # The forward() method you defined in the CuringPredictorNet 
+        # class is executed automatically.
+        predictions = model(batch_X)
+        # Calculate the loss (error) by comparing the predictions 
+        # with the actual values ​​(batch_y), using the loss function 
+        # previously defined (nn.MSELoss()).
+        loss = criterion(predictions, batch_y)
+        # Backpropagation. It calculates the loss gradients with respect 
+        # to all model weights (and stores them in the parameters, alongside 
+        # the weights themselves).
+        # Each parameter (weight and bias) of fc1, fc2, and out has a .grad 
+        # attribute that now holds the calculated gradient.
+        loss.backward()
+        # Update the model weights using the gradients calculated in 
+        # `loss.backward()`. The optimizer (Adam) determines how much to adjust 
+        # each weight (learning rate, momentum, etc.).
+        # Result: The weights are modified, and the model "learns" from this batch.
+        optimizer.step()
+        # By multiplying the average batch loss by the number of samples, 
+        # we get the total loss for this batch.
+        running_loss += loss.item() * batch_X.size(0)
+    # Divide the total loss by the total number of samples in the dataset 
+    # (len(loader.dataset)).
+    # Result: The average loss for the entire epoch.
+    return running_loss / len(loader.dataset)
+
+def evaluate(model, loader, criterion):
+    model.eval()
+    running_loss = 0.0
+    with torch.no_grad():
+        for batch_X, batch_y in loader:
+            predictions = model(batch_X)
+            loss= criterion(predictions, batch_y)
+            running_loss += loss.item() * batch_X.size(0)
+        return running_loss / len(loader.dataset)\
+
+
+# ==================== RUN TRAINING ====================
+'''
+NUM_EPOCHS is set to 100 as a fixed empirical value for MVP simplicity.
+With synthetic data, convergence typically occurs well before 100 epochs,
+making this a safe and practical choice for demonstration purposes.
+
+In future production versions, this will be replaced by Early Stopping
+with a validation set to automatically determine the optimal number
+of epochs and prevent overfitting.
+'''
+NUM_EPOCHS = 100
+history = {
+    "train_loss": [], 
+    "test_loss": []
+}
+
+print("Strating training...")
+for epoch in range(1, NUM_EPOCHS + 1):
+    train_loss = train_epoch(model, train_loader, criterion, optimizer)
+    test_loss = evaluate(model, test_loader, criterion)
+    history["train_loss"].append(train_loss)
+    history["test_loss"].append(test_loss)
+    if epoch % 10 == 0 or epoch == 1:
+        print(f"Epoch {epoch:3d}/{NUM_EPOCHS} | Train Loss: {train_loss:.4f} | Test Loss: {test_loss:.4f}")
+
+print("Training complete.")
+
+
+# ==================== MODEL EVALUATION ====================
+# 3.10
