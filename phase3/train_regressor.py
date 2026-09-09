@@ -1,3 +1,11 @@
+'''
+Future improving:
+-----------------
+Partition code in modouls as best practice
+(as described in optimal_code_partitioning.md)
+'''
+
+
 import numpy as np
 import pandas as pd
 import torch
@@ -6,6 +14,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 from pathlib import Path
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import json
 
 from model import CuringPredictorNet
 
@@ -16,6 +26,11 @@ BASE_DIR = Path(__file__).resolve().parent
 # data dir path in this sub-folder
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+# visuals dir path in this sub-folder
+VISUALS = BASE_DIR / "visuals"
+VISUALS.mkdir(parents=True, exist_ok=True)
+# saved model path in this sub-folder
+MODEL_PATH = BASE_DIR / "curing_predictor_model.pth"
 
 # folder in which embeddings and metadata files we need to access to 
 # are located (in phase2/)
@@ -23,11 +38,23 @@ DATA_P2_DIR = BASE_DIR.parent / "phase2" / "data"
 
 # PIs
 INPUT_PI_EMBED = DATA_P2_DIR / "embeddings_PIs.npy"
-INPUT_PI_META = "embeddings_metadata_PIs.csv"
+INPUT_PI_META = DATA_P2_DIR / "embeddings_metadata_PIs.csv"
 
 # monomers
-INPUT_MONO_EMBED = "embeddings_monomers.npy"
-INPUT_MONO_META = "embeddings_metadata_monomers.csv"
+INPUT_MONO_EMBED = DATA_P2_DIR / "embeddings_monomers.npy"
+INPUT_MONO_META = DATA_P2_DIR / "embeddings_metadata_monomers.csv"
+
+# weight_decay configuration
+WEIGHT_DECAY = 1e-4 # set 0.0 for disabling
+
+
+# ==================== SEED ====================
+SEED = 42  # set as 0 for disabling reproducibility and discover new paths to prediction
+if SEED > 0:
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    # with CUDA:
+    torch.cuda.manual_seed_all(SEED)
 
 
 # ==================== LOAD DATA ====================
@@ -321,12 +348,11 @@ Calculate the total number of trainable
 parameters (weights + biases) of the model. 
 p.numel() returns the number of elements 
 in each parameter tensor.'''
-print(f"Total parameters: {sum(p.numel() 
-                               for p in model.parameters())}")
+print(f"Total parameters: {sum(p.numel() for p in model.parameters())}")
 
 # ==================== LOSS & OPTIMIZER ====================
 criterion = nn.MSELoss() # Mean Squared Error Regression
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=WEIGHT_DECAY)
 '''
 model.parameters() - It tells the optimizer which weights to update.
 lr=0.01 - Learning rate. It controls the size of the steps Adam takes 
@@ -399,7 +425,7 @@ def evaluate(model, loader, criterion):
 
 # ==================== RUN TRAINING ====================
 '''
-NUM_EPOCHS is set to 100 as a fixed empirical value for MVP simplicity.
+NUM_EPOCHS is set to 30 as a fixed empirical value for MVP simplicity.
 With synthetic data, convergence typically occurs well before 100 epochs,
 making this a safe and practical choice for demonstration purposes.
 
@@ -407,7 +433,7 @@ In future production versions, this will be replaced by Early Stopping
 with a validation set to automatically determine the optimal number
 of epochs and prevent overfitting.
 '''
-NUM_EPOCHS = 100
+NUM_EPOCHS = 30
 history = {
     "train_loss": [], 
     "test_loss": []
@@ -426,4 +452,139 @@ print("Training complete.")
 
 
 # ==================== MODEL EVALUATION ====================
-# 3.10
+'''
+This function:
+    1. Passes all test set samples through the model 
+       (without updating the weights).
+    2. Collects all predictions and actual values ​​into two lists.
+    3. Calculates 4 metrics to evaluate model performance:
+        - MSE (Mean Squared Error)
+        - RMSE (Root Mean Squared Error)
+        - R² (Coefficient of determination)
+        - MAE (Mean Absolute Error)
+    4. Returns everything in a dictionary.
+'''
+def evaluate_metrics(model, loader):
+    # put model in evaluation mode
+    model.eval()
+    predictions = []
+    targets = []
+    # disable gradient calculation 
+    # not needed, and saves memory/improves speed
+    with torch.no_grad():
+        for batch_X, batch_y in loader:
+            # Forward pass on batch_X
+            preds = model(batch_X)
+            # convert the PyTorch tensor into a NumPy array (numpy()), 
+            # transform the tensor from (batch_size, 1) to a 
+            # 1D array of shape (batch_size,) (flatten()) and add the 
+            # elements to the `predictions` list.
+            predictions.extend(preds.numpy().flatten())
+            # same on real values from test batch
+            targets.extend(batch_y.numpy().flatten())
+    # Convert lists into NumPy arrays to perform efficient vector calculations
+    predictions = np.array(predictions)
+    targets = np.array(targets)
+    # mean of the squared errors
+    mse = np.mean((predictions - targets) ** 2)
+    # square root of MSE
+    rmse = np.sqrt(mse)
+    # Total Sum of Squares -  measures the total variance of the data
+    # the extent to which actual values ​​are dispersed around their mean
+    ss_total = np.sum((targets - np.mean(targets)) ** 2)
+    # Sum of Squared Residuals - measures the model's error
+    # the extent to which predictions deviate from the actual values
+    ss_residual = np.sum((targets - predictions) ** 2)
+    # proportion of variance explained by the model
+    # 1 = perfect, 0 = the model explains nothing
+    r2 = 1 - (ss_residual / ss_total) if ss_total > 0 else 0
+    # mean absolute error
+    mae = np.mean(np.abs(predictions - targets))
+    return {
+        "MSE": mse, 
+        "RMSE": rmse, 
+        "R²": r2, 
+        "MAE": mae, 
+        "predictions": predictions, 
+        "targets": targets
+    }
+
+metrics = evaluate_metrics(model, test_loader)
+
+print("\n=== Test Set Metrics ===")
+print(f"MSE: {metrics['MSE']:.4f}")
+print(f"RMSE: {metrics['RMSE']:.4f}")
+print(f"R²: {metrics['R²']:.4f}")
+print(f"MAE: {metrics['MAE']:.4f}")
+
+
+# ==================== VISUALISATION ====================
+'''
+This function creates a two-panel plot that allows for a visual assessment 
+of the model's performance:
+    - Left panel: the progression of the loss (error) during training and 
+      on the test set, epoch by epoch.
+    - Right panel: a direct comparison between the actual values ​​and those 
+      predicted by the model.
+It helps determine whether the model is learning effectively, whether overfitting 
+is occurring and how accurate the predictions actually are.
+'''
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+# 1 row, 2 columns
+
+# plot the loss on the training/test set for each epoch
+axes[0].plot(history["train_loss"], label="Train")
+axes[0].plot(history["test_loss"], label="Test")
+# assign labels to the axes
+axes[0].set_xlabel("Epoch")
+axes[0].set_ylabel("Loss (MSE)")
+# set other plot features
+axes[0].set_title("Loss Curves")
+axes[0].legend()
+axes[0].grid(True)
+
+''''
+Create a scatter plot
+
+Each point represents a sample from the test set:
+    - X: the actual value (target) → metrics["targets"];
+    - Y: the value predicted by the model → metrics["predictions"].
+'''
+axes[1].scatter(metrics["targets"], metrics["predictions"], alpha=0.7)
+# draw a dashed red diagonal line from (0,0) to (100,100)
+axes[1].plot([0, 100], [0, 100], 'r--', label="Perfect")
+axes[1].set_xlabel("True Conversion (%)")
+axes[1].set_ylabel("Predicted Conversion (%)")
+axes[1].set_title("Predictions vs True")
+axes[1].legend()
+axes[1].grid(True)
+
+plt.tight_layout()
+plt.savefig(BASE_DIR / VISUALS / "training_curves.png")
+print(f"Plot saved to {BASE_DIR / VISUALS / 'training_curves.png'}")
+
+
+# ==================== SAVE MODEL ====================
+torch.save(model.state_dict(), MODEL_PATH)
+print(f"Model saved to {MODEL_PATH}")
+
+model_info = {
+    "input_dim": input_dim,
+    "hidden1": 128,
+    "hidden2": 64,
+    "output_dim": 1
+}
+with open(BASE_DIR / "model_config.json", "w") as f:
+    json.dump(model_info, f, indent=2)
+print("Model config saved to model_config.json")
+
+
+'''
+Since this script is designed to be executed directly, 
+the `if __name__ == "__main__"` block is not mandatory.
+
+If in the future you want to import functions from this 
+script into another file (e.g. for inference in Phase 4), 
+it would be best to protect the main code with the 
+`if __name__ == "__main__"` block.
+'''
