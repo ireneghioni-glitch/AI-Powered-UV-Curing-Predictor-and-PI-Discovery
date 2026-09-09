@@ -1128,3 +1128,5 @@ Model config saved to model_config.json
 This is my final configuration. 
 
 Proceeding with Phase 4 of the pipeline.
+
+No need to update `train_regressor.py` with environmental features because they will be better handled in Phase 4 by XGBoost, which is best for tabular data and doesn't fail like neural networks with too small data (like in this case, 8k parameters aprox).

@@ -49,9 +49,12 @@ WEIGHT_DECAY = 1e-4 # set 0.0 for disabling
 SEED = 42  # set as 0 for disabling reproducibility and discover new paths to prediction
 if SEED > 0:
     np.random.seed(SEED)
+    print(f"[INFO] Fixed seed: {SEED} (reproducible results)")
     torch.manual_seed(SEED)
     # with CUDA:
     torch.cuda.manual_seed_all(SEED)
+else:
+    print(f"[INFO] Seed disabled (active exploration)")
 
 
 # ==================== LOAD DATA ====================
