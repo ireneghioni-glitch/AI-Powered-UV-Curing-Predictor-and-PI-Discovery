@@ -1,0 +1,41 @@
+name,smiles,role,augment
+TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,orig
+TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,rot90
+TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,rot180
+TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,rot270
+DEGDA,C=C(C)C(=O)OCCOCCOC(=O)C(=C)C,monomer,orig
+DEGDA,C=C(C)C(=O)OCCOCCOC(=O)C(=C)C,monomer,rot90
+DEGDA,C=C(C)C(=O)OCCOCCOC(=O)C(=C)C,monomer,rot180
+DEGDA,C=C(C)C(=O)OCCOCCOC(=O)C(=C)C,monomer,rot270
+HDDA,C=CC(=O)OCCCCCCOC(=O)C=C,monomer,orig
+HDDA,C=CC(=O)OCCCCCCOC(=O)C=C,monomer,rot90
+HDDA,C=CC(=O)OCCCCCCOC(=O)C=C,monomer,rot180
+HDDA,C=CC(=O)OCCCCCCOC(=O)C=C,monomer,rot270
+PEGDA,C=C(C)C(=O)OCCOCCOCCOC(=O)C(=C)C,monomer,orig
+PEGDA,C=C(C)C(=O)OCCOCCOCCOC(=O)C(=C)C,monomer,rot90
+PEGDA,C=C(C)C(=O)OCCOCCOCCOC(=O)C(=C)C,monomer,rot180
+PEGDA,C=C(C)C(=O)OCCOCCOCCOC(=O)C(=C)C,monomer,rot270
+HEMA,C=C(C)C(=O)OCCO,monomer,orig
+HEMA,C=C(C)C(=O)OCCO,monomer,rot90
+HEMA,C=C(C)C(=O)OCCO,monomer,rot180
+HEMA,C=C(C)C(=O)OCCO,monomer,rot270
+MMA,C=C(C)C(=O)OC,monomer,orig
+MMA,C=C(C)C(=O)OC,monomer,rot90
+MMA,C=C(C)C(=O)OC,monomer,rot180
+MMA,C=C(C)C(=O)OC,monomer,rot270
+Butyl acrylate,C=CC(=O)OCCCC,monomer,orig
+Butyl acrylate,C=CC(=O)OCCCC,monomer,rot90
+Butyl acrylate,C=CC(=O)OCCCC,monomer,rot180
+Butyl acrylate,C=CC(=O)OCCCC,monomer,rot270
+Acrylic acid,C=CC(=O)O,monomer,orig
+Acrylic acid,C=CC(=O)O,monomer,rot90
+Acrylic acid,C=CC(=O)O,monomer,rot180
+Acrylic acid,C=CC(=O)O,monomer,rot270
+Styrene,C=CC1=CC=CC=C1,monomer,orig
+Styrene,C=CC1=CC=CC=C1,monomer,rot90
+Styrene,C=CC1=CC=CC=C1,monomer,rot180
+Styrene,C=CC1=CC=CC=C1,monomer,rot270
+IBOA,C=CC(=O)OC1C2CC(C2)C1(C)C,monomer,orig
+IBOA,C=CC(=O)OC1C2CC(C2)C1(C)C,monomer,rot90
+IBOA,C=CC(=O)OC1C2CC(C2)C1(C)C,monomer,rot180
+IBOA,C=CC(=O)OC1C2CC(C2)C1(C)C,monomer,rot270
