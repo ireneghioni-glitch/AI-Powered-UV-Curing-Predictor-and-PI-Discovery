@@ -1,0 +1,57 @@
+name,smiles,role
+Irgacure 651,COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Darocur 1173,CC(C)(O)C(=O)C1=CC=CC=C1,PI_TypeI
+Irgacure 184,OC1(CCCCC1)C(=O)C2=CC=CC=C2,PI_TypeI
+Irgacure 369,CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3,PI_TypeI
+Irgacure 907,CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2,PI_TypeI
+TPO,CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+TPO-L,CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Irgacure 819,CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Benzoin methyl ether,COC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Benzoin ethyl ether,CCOC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Benzoin isopropyl ether,CC(C)OC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI
+Irgacure 2959,CC(C)(C(=O)C1=CC=C(C=C1)OCCO)O,PI_TypeI
+Irgacure 379,,PI_TypeI
+Omnirad Phenylglyoxylate,,PI_TypeI
+Ivocerin,,PI_TypeI
+Irgacure 784,C1C=CC=C1.C1C=CC=C1.C1=CN(C=C1)C2C=CC(=C=C2F)F.C1=CN(C=C1)C2C=CC(=C=C2F)F.[Ti],PI_TypeI
+Benzophenone,O=C(C1=CC=CC=C1)C2=CC=CC=C2,PI_TypeII
+4-Methylbenzophenone,CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2,PI_TypeII
+4-Phenylbenzophenone,C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3,PI_TypeII
+Methyl o-benzoylbenzoate,COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2,PI_TypeII
+ITX,CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2,PI_TypeII
+TX,COC1=CC(=CC(=C1OC)OC)C(=O)N2CCOCC2,PI_TypeII
+DETX,CCC1=CC(=C2C(=C1)C(=O)C3=CC=CC=C3S2)CC,PI_TypeII
+Camphorquinone,CC1(C)C2CC1C(=O)C2=O,PI_TypeII
+Benzil,O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeII
+Anthraquinone,O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII
+"9,10-Phenanthrenequinone",O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII
+Acridone,O=C1C2=CC=CC=C2NC3=CC=CC=C13,PI_TypeII
+Michler's ketone,CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C,PI_TypeII
+"4,4'-Bis(diethylamino)benzophenone",CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC,PI_TypeII
+"3,3'-carbonylbiscoumarin",,PI_TypeII
+Eosin Y,C1=CC=C(C(=C1)C2=C3C=C(C(=O)C(=C3OC4=C(C(=C(C=C24)Br)[O-])Br)Br)Br)C(=O)[O-].[Na+].[Na+],PI_TypeII
+Methylene blue,CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2.[Cl-],PI_TypeII
+Rose bengal,C1=C2C(=C3C=C(C(=O)C(=C3OC2=C(C(=C1I)[O-])I)I)I)C4=C(C(=C(C(=C4Cl)Cl)Cl)Cl)C(=O)[O-].[K+].[K+],PI_TypeII
+Triethylamine,CCN(CC)CC,co-initiator
+TEOA,C(CO)N(CCO)CCO,co-initiator
+MDEA,CN(CCO)CCO,co-initiator
+DMAE,CN(C)CCO,co-initiator
+DMBA,CC1=C2C=CC3=CC=CC=C3C2=C(C4=CC=CC=C14)C,co-initiator
+N-Phenyldiethanolamine,C1=CC=C(C=C1)N(CCO)CCO,co-initiator
+DIPEA,CCN(C(C)C)C(C)C,co-initiator
+DABCO,C1CN2CCN1CC2,co-initiator
+EDB,C(CBr)Br,co-initiator
+2-Ethylhexyl 4-(dimethylamino)benzoate,CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator
+Methyl 4-(dimethylamino)benzoate,COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator
+BDB,CCC(CC1=CC2=C(C=C1)OCO2)N,co-initiator
+4-(Dimethylamino)benzoic acid,CN(C)C1=CC=C(C=C1)C(=O)O,co-initiator
+DMAB,CN(C)C1=CC=C(C=C1)N=NC2=CC=CC=C2,co-initiator
+2-Mercaptoethanol,OCCS,co-initiator
+Thioglycolic acid,O=C(O)CS,co-initiator
+Ethyl thioglycolate,CCOC(=O)CS,co-initiator
+PETMP,C(CS)C(=O)OCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator
+Trimethylolpropane tris(3-mercaptopropionate),CCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator
+HDT,C1=CC=[N+]2C(=C1)NC=C2C3=NC(=NC=C3)NC4=CC=C(C=C4)S(=O)(=O)N,co-initiator
+Anthracene,C1=CC=C2C=C3C=CC=CC3=CC2=C1,co-initiator
+Perylene,C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1,co-initiator
