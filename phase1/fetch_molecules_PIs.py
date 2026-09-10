@@ -1,13 +1,36 @@
 '''
+Batch resolver for photoinitiator SMILES.
+
 IMPORTANT!
-This script has to be run again AFTER EACH TIME THE LIST `molecules_config`
-IS UPDATED WITH NEW MOLECULES.
+Re-run this script every time ``molecules_config`` is updated, so that
+``data/molecules_PIs.csv`` stays in sync with the curated list.
+
+Run from the PROJECT ROOT (not from inside phase1/):
+
+    python -m phase1.fetch_molecules_PIs
+
+The actual PubChem resolution logic (REST calls, cache, manual fallback,
+safe CSV I/O) lives in ``shared/pubchem_client.py``.
+
+==================== FUTURE REFACTOR: EXTERNALIZE MOLECULE CONFIG ====================
+Currently ``molecules_config`` is hardcoded: adding a molecule requires
+editing this file.
+
+Planned refactor: move the list to ``data/molecules_config.json``, load it
+via a ``config_loader.py``, and expose ``PI_CLIENT.fetch_single_molecule``
+so Phase 5 can add new molecules at runtime
+(check CSV -> add to JSON -> fetch -> update CSV).
+
+Details: see ``phase1/docs/future_refactor_externalize_config.md``.
+=====================================================================================
 '''
 
-import time
+from __future__ import annotations
+
 import pandas as pd
-import requests
 from pathlib import Path
+
+from shared.pubchem_client import PubChemClient
 
 
 # ==================== CONFIGURATION ====================
@@ -20,162 +43,59 @@ OUTPUT_PI_CSV = DATA_DIR / "molecules_PIs.csv"
 CACHE_FILE = DATA_DIR / "smiles_cache_PIs.csv"
 
 
-# ==================== CACHE FUNCTIONS ====================
+# manual fallback dictionary moved here from get_smiles_robust()
+# ==================== MANUAL FALLBACK DICTIONARY ====================
+MANUAL_SMILES = {
+    "Irgacure 651": "COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
+    "Darocur 1173": "CC(C)(O)C(=O)C1=CC=CC=C1",
+    "Irgacure 184": "OC1(CCCCC1)C(=O)C2=CC=CC=C2",
+    "Irgacure 369": "CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3",
+    "Irgacure 907": "CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2",
+    "TPO": "CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
+    "TPO-L": "CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
+    "Irgacure 819": "CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
+    "Benzophenone": "O=C(C1=CC=CC=C1)C2=CC=CC=C2",
+    "4-Methylbenzophenone": "CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2",
+    "4-Phenylbenzophenone": "C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3",
+    "Methyl o-benzoylbenzoate": "COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2",
+    "ITX": "CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2",
+    "Thioxanthone": "O=C1C2=CC=CC=C2SC3=CC=CC=C13",
+    "Camphorquinone": "CC1(C)C2CC1C(=O)C2=O",
+    "Benzil": "O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
+    "Anthracene": "C1=CC=C2C=C3C=CC=CC3=CC2=C1",
+    "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
+    "Anthraquinone": "O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13",
+    "9,10-Phenanthrenequinone": "O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13",
+    "Acridone": "O=C1C2=CC=CC=C2NC3=CC=CC=C13",
+    "Michler's ketone": "CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C",
+    "4,4'-Bis(diethylamino)benzophenone": "CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC",
+    "Triethylamine": "CCN(CC)CC",
+    "Triethanolamine": "OCCN(CCO)CCO",
+    "N-Methyldiethanolamine": "CN(CCO)CCO",
+    "2-Dimethylaminoethanol": "CN(C)CCO",
+    "Ethyl 4-(dimethylamino)benzoate": "CCOC(=O)C1=CC=C(C=C1)N(C)C",
+    "2-Ethylhexyl 4-(dimethylamino)benzoate": "CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C",
+    "Methyl 4-(dimethylamino)benzoate": "COC(=O)C1=CC=C(C=C1)N(C)C",
+    "4-(Dimethylamino)benzoic acid": "CN(C)C1=CC=C(C=C1)C(=O)O",
+    "2-Mercaptoethanol": "OCCS",
+    "Thioglycolic acid": "O=C(O)CS",
+    "Ethyl thioglycolate": "CCOC(=O)CS",
+    "1,6-Hexanedithiol": "SCCCCCCS",
+    "Anthracene": "C1=CC=C2C=C3C=CC=CC3=CC2=C1",
+    "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
+}
 
-def load_cache():
-    if CACHE_FILE.exists():
-        return pd.read_csv(CACHE_FILE)
-    return pd.DataFrame(columns=["name", "smiles"])
 
-def save_cache(df):
-    df.to_csv(CACHE_FILE, index=False)
+# ==================== CLIENT INSTANCE ====================
+# A single PubChemClient instance for the PI family.
+# Phase 5 imports this object directly and calls
+# ``PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")``.
 
-def _save_to_cache(cache_df, name, smiles):
-    """Helper function to save a found SMILES to cache."""
-    if name and smiles:
-        new_row = pd.DataFrame([[name, smiles]], columns=["name", "smiles"])
-        updated_df = pd.concat([cache_df, new_row], ignore_index=True)
-        save_cache(updated_df)
-
-
-# ==================== FUNCTIONS ====================
-
-def get_smiles_from_cid(cid):
-    """Retrieves the Canonical SMILES for a CID using the PubChem REST API."""
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/CanonicalSMILES/TXT"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            smiles = response.text.strip()
-            return smiles if smiles else None
-    except Exception as e:
-        print(f'    [API ERROR] {e}')
-    return None
-
-def get_cid_from_name(name):
-    """Retrieves the CID of a compound given its name, using the REST API."""
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{name}/cids/TXT"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            cids = response.text.strip().split()
-            if cids:
-                return int(cids[0])
-    except Exception as e:
-        print(f'    [API ERROR] {e}')
-    return None
-
-def get_smiles_robust(primary_names, alt_name=None):
-    """
-    Search for the SMILES:
-    1. Check cache first.
-    2. Try each primary_name (manual fallback + API).
-    3. If that fails, try the alt_name.
-    4. Save to cache when found.
-    """
-    # 1. LOAD CACHE
-    cache_df = load_cache()
-
-    # 2. CHECK CACHE FIRST
-    for name in primary_names + ([alt_name] if alt_name else []):
-        if name and name in cache_df['name'].values:
-            print(f'    [CACHE] Found {name} in cache')
-            return cache_df[cache_df['name'] == name]['smiles'].iloc[0], name
-
-    # 3. MANUAL FALLBACK DICTIONARY
-    manual_smiles = {
-        "Irgacure 651": "COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
-        "Darocur 1173": "CC(C)(O)C(=O)C1=CC=CC=C1",
-        "Irgacure 184": "OC1(CCCCC1)C(=O)C2=CC=CC=C2",
-        "Irgacure 369": "CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3",
-        "Irgacure 907": "CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2",
-        "TPO": "CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
-        "TPO-L": "CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
-        "Irgacure 819": "CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
-        "Benzophenone": "O=C(C1=CC=CC=C1)C2=CC=CC=C2",
-        "4-Methylbenzophenone": "CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2",
-        "4-Phenylbenzophenone": "C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3",
-        "Methyl o-benzoylbenzoate": "COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2",
-        "ITX": "CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2",
-        "Thioxanthone": "O=C1C2=CC=CC=C2SC3=CC=CC=C13",
-        "Camphorquinone": "CC1(C)C2CC1C(=O)C2=O",
-        "Benzil": "O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2",
-        "Anthracene": "C1=CC=C2C=C3C=CC=CC3=CC2=C1",
-        "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
-        "Anthraquinone": "O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13",
-        "9,10-Phenanthrenequinone": "O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13",
-        "Acridone": "O=C1C2=CC=CC=C2NC3=CC=CC=C13",
-        "Michler's ketone": "CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C",
-        "4,4'-Bis(diethylamino)benzophenone": "CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC",
-        "Triethylamine": "CCN(CC)CC",
-        "Triethanolamine": "OCCN(CCO)CCO",
-        "N-Methyldiethanolamine": "CN(CCO)CCO",
-        "2-Dimethylaminoethanol": "CN(C)CCO",
-        "Ethyl 4-(dimethylamino)benzoate": "CCOC(=O)C1=CC=C(C=C1)N(C)C",
-        "2-Ethylhexyl 4-(dimethylamino)benzoate": "CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C",
-        "Methyl 4-(dimethylamino)benzoate": "COC(=O)C1=CC=C(C=C1)N(C)C",
-        "4-(Dimethylamino)benzoic acid": "CN(C)C1=CC=C(C=C1)C(=O)O",
-        "2-Mercaptoethanol": "OCCS",
-        "Thioglycolic acid": "O=C(O)CS",
-        "Ethyl thioglycolate": "CCOC(=O)CS",
-        "1,6-Hexanedithiol": "SCCCCCCS",
-        "Anthracene": "C1=CC=C2C=C3C=CC=CC3=CC2=C1",
-        "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
-    }
-
-    # 4. SEARCH PRIMARY NAMES
-    for primary in primary_names:
-        print(f'Searching for {primary}...')
-
-        # Manual fallback
-        if primary in manual_smiles:
-            smiles = manual_smiles[primary]
-            used_name = primary
-            print(f'    [OK] Found in manual fallback')
-            _save_to_cache(cache_df, used_name, smiles)
-            return smiles, used_name
-
-        # API search (get CID from name)
-        cid = get_cid_from_name(primary)
-        if cid:
-            smiles = get_smiles_from_cid(cid)
-            if smiles:
-                used_name = primary
-                print(f'    [OK] Found via CID {cid}')
-                _save_to_cache(cache_df, used_name, smiles)
-                return smiles, used_name
-            else:
-                print(f'    [WARN] CID {cid} has no SMILES')
-        else:
-            print(f'    [WARN] No CID found for {primary}')
-
-    # 5. FALLBACK ON ALT_NAME (IUPAC)
-    if alt_name:
-        print(f'    [INFO] Fallback on {alt_name}...')
-
-        if alt_name in manual_smiles:
-            smiles = manual_smiles[alt_name]
-            used_name = alt_name
-            print(f'    [OK] Found in manual fallback')
-            _save_to_cache(cache_df, used_name, smiles)
-            return smiles, used_name
-
-        cid = get_cid_from_name(alt_name)
-        if cid:
-            smiles = get_smiles_from_cid(cid)
-            if smiles:
-                used_name = alt_name
-                print(f'    [OK] Found via CID {cid}')
-                _save_to_cache(cache_df, used_name, smiles)
-                return smiles, used_name
-            else:
-                print(f'    [WARN] CID {cid} has no SMILES')
-        else:
-            print(f'    [WARN] No CID found for {alt_name}')
-
-    # 6. NOT FOUND
-    print(f'    No SMILES found for {", ".join(primary_names)} nor {alt_name}; molecule skipped.')
-    return None, None
+PI_CLIENT = PubChemClient(
+    manual_smiles=MANUAL_SMILES,
+    cache_file=CACHE_FILE,
+    output_csv=OUTPUT_PI_CSV,
+)
 
 
 # ==================== MOLECULES LIST ====================
@@ -183,8 +103,7 @@ def get_smiles_robust(primary_names, alt_name=None):
 '''
 IMPORTANT!
 When adding new PIs, specify trade name(s) as `primary_names` and
-insert value None as `alt_name`,
-or viceversa.
+insert value None as `alt_name`, or viceversa.
 '''
 
 molecules_config = [
@@ -258,46 +177,100 @@ molecules_config = [
 ]
 
 
+# ==================== BACKWARD-COMPAT WRAPPER ====================
+def fetch_single_PI(name: str) -> str | None:
+    '''
+    Legacy thin wrapper. 
+    Returns only the SMILES string (or ``None``).
+
+    Kept for backward compatibility with any Phase 1 code that still
+    imports it. 
+    New code (Phase 5) should call
+    ``PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")`` directly
+    to get the full ``{"name", "smiles", "role"}`` dict.
+    '''
+    result = PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")
+    return result["smiles"] if result else None
+
+
 # ==================== MAIN EXECUTION ====================
+def main():
+    '''
+    Batch entry point: resolve the canonical SMILES for every molecule
+    declared in ``molecules_config`` and persist the results to
+    ``data/molecules_PIs.csv``.
 
-print('Starting fetching SMILES using PubChem REST API + manual fallback...')
-print(f'Total molecules to process: {len(molecules_config)}\n')
+    Workflow
+    --------
+    1. Iterate over ``molecules_config`` (list of dicts, each with
+       ``primary_names``, optional ``alt_name`` and ``role``).
+    2. For each entry, call :meth:`PubChemClient.get_smiles_robust`,
+       which resolves the SMILES using, in order of preference:
+         (a) the local cache ``data/smiles_cache_PIs.csv``,
+         (b) the manual fallback dictionary ``MANUAL_SMILES``,
+         (c) the PubChem PUG REST API (name -> CID -> CanonicalSMILES).
+    3. Collect one record per molecule: ``{"name", "smiles", "role"}``.
+    4. Overwrite ``data/molecules_PIs.csv`` (fully rewritten every run,
+       so it always reflects the current configuration).
+    5. Print a summary (found / total, list of missing molecules) and a
+       preview of the first 10 rows.
 
-results = []
-for idx, item in enumerate(molecules_config, 1):
-    primary_names = item["primary_names"]
-    alt = item["alt_name"]
-    role = item["role"]
+    Reads
+    -----
+    - Module constant ``molecules_config``.
+    - ``data/smiles_cache_PIs.csv`` (via ``PI_CLIENT``).
 
-    print(f'[{idx}/{len(molecules_config)}] Processing: {", ".join(primary_names)} (role: {role})')
+    Writes
+    ------
+    - ``data/molecules_PIs.csv``     — final dataset consumed by Phases 2–5.
+    - ``data/smiles_cache_PIs.csv``  — updated on every successful lookup.
 
-    smiles, used_name = get_smiles_robust(primary_names, alt)
-    if smiles is not None:
-        print(f'    DEBUG: smiles = {smiles[:60]}...')
-    else:
-        print(f'    DEBUG: smiles = None')
+    Notes
+    -----
+    Must be run from the project root:
+        ``python -m phase1.fetch_molecules_PIs``
+    Re-run every time ``molecules_config`` changes.
+    '''
+    print('Starting fetching SMILES using PubChem REST API + manual fallback...')
+    print(f'Total molecules to process: {len(molecules_config)}\n')
 
-    results.append({
-        "name": used_name if used_name else primary_names[0],
-        "smiles": smiles,
-        "role": role
-    })
-    print("---")
+    results = []
+    for idx, item in enumerate(molecules_config, 1):
+        primary_names = item["primary_names"]
+        alt = item["alt_name"]
+        role = item["role"]
 
-df_final = pd.DataFrame(results)
-df_final.to_csv(OUTPUT_PI_CSV, index=False)
+        print(f'[{idx}/{len(molecules_config)}] Processing: {", ".join(primary_names)} (role: {role})')
 
-found = df_final['smiles'].notna().sum()
-total = len(df_final)
-print(f'\n[COMPLETED] CSV saved as "{OUTPUT_PI_CSV}"')
-print(f'    Found molecules: {found} over {total}')
-if found < total:
-    missing = df_final[df_final['smiles'].isna()]['name'].tolist()
-    print(f'    Not found: {missing}')
+        smiles, used_name = PI_CLIENT.get_smiles_robust(primary_names, alt)
+        if smiles is not None:
+            print(f'    DEBUG: smiles = {smiles[:60]}...')
+        else:
+            print(f'    DEBUG: smiles = None')
+        results.append({
+            "name": used_name if used_name else primary_names[0],
+            "smiles": smiles,
+            "role": role
+        })
+        print("---")
 
-print('\nPreview of generated CSV:')
-print(df_final.head(10).to_string())
+    df_final = pd.DataFrame(results)
+    df_final.to_csv(OUTPUT_PI_CSV, index=False)
 
+    found = df_final['smiles'].notna().sum()
+    total = len(df_final)
+    print(f'\n[COMPLETED] CSV saved as "{OUTPUT_PI_CSV}"')
+    print(f'    Found molecules: {found} over {total}')
+    if found < total:
+        missing = df_final[df_final['smiles'].isna()]['name'].tolist()
+        print(f'    Not found: {missing}')
+
+    print('\nPreview of generated CSV:')
+    print(df_final.head(10).to_string())
+
+
+if __name__ == "__main__":
+    main()
 
 '''
 ========================================================================
@@ -321,3 +294,4 @@ Why didn't we use REST right away?	    Because pubchempy is the standard choice 
                                         the issue only came to light after testing.
 What did we learn?	                    To recognize when to abandon a library and use the API directly.
 '''
+
