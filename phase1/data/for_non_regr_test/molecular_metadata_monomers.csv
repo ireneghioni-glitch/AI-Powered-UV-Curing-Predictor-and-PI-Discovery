@@ -1,4 +1,4 @@
-name,smiles,role,augment
+  name,smiles,role,augment
 TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,orig
 TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,rot90
 TMPTA,C=C(C)C(=O)OCC(COC(=O)C(=C)C)(COC(=O)C(=C)C)COC(=O)C(=C)C,monomer,rot180

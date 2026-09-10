@@ -1,28 +1,36 @@
 '''
+Batch resolver for photoinitiator SMILES.
+
 IMPORTANT!
-This script has to be run again AFTER EACH TIME THE LIST `molecules_config`
-IS UPDATED WITH NEW MOLECULES.
+Re-run this script every time ``molecules_config`` is updated, so that
+``data/molecules_PIs.csv`` stays in sync with the curated list.
+
+Run from the PROJECT ROOT (not from inside phase1/):
+
+    python -m phase1.fetch_molecules_PIs
+
+The actual PubChem resolution logic (REST calls, cache, manual fallback,
+safe CSV I/O) lives in ``shared/pubchem_client.py``.
 
 ==================== FUTURE REFACTOR: EXTERNALIZE MOLECULE CONFIG ====================
-Currently `molecules_config` is hardcoded: adding a molecule requires editing
-this file. 
-Planned refactor: move the list to `data/molecules_config.json`,
-load it via a `config_loader.py`, and expose `fetch_single_PI(name)` so Phase 5
-can add new molecules at runtime (check CSV → add to JSON → fetch → update CSV).
-Wrap the main in `if __name__ == "__main__":` to allow safe imports.
+Currently ``molecules_config`` is hardcoded: adding a molecule requires
+editing this file.
 
-Details: see `future_refactor_externalize_config.md`.
+Planned refactor: move the list to ``data/molecules_config.json``, load it
+via a ``config_loader.py``, and expose ``PI_CLIENT.fetch_single_molecule``
+so Phase 5 can add new molecules at runtime
+(check CSV -> add to JSON -> fetch -> update CSV).
+
+Details: see ``phase1/docs/future_refactor_externalize_config.md``.
 =====================================================================================
 '''
 
-import time
-import pandas as pd
-import requests
-from pathlib import Path
-import threading
+from __future__ import annotations
 
-# introduce multithreading on CSV of molecules 
-_CSV_LOCK = threading.Lock()
+import pandas as pd
+from pathlib import Path
+
+from shared.pubchem_client import PubChemClient
 
 
 # ==================== CONFIGURATION ====================
@@ -76,156 +84,18 @@ MANUAL_SMILES = {
     "Anthracene": "C1=CC=C2C=C3C=CC=CC3=CC2=C1",
     "Perylene": "C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1",
 }
-# case sensitive index for lookup 0(1)
-_MANUAL_SMILES_LOWER = {k.lower(): (k, v) for k, v in MANUAL_SMILES.items()}
 
 
-# ==================== THREADING ====================
-def _load_csv_safe(path: Path) -> pd.DataFrame:
-    '''Load a molecules CSV, returning an empty DataFrame 
-    on missing/empty/corrupt file.'''
-    if not path.exists():
-        return pd.DataFrame(columns=["name", "smiles", "role"])
-    try:
-        df = pd.read_csv(path)
-        return df if not df.empty else pd.DataFrame(columns=["name", "smiles", "role"])
-    except (pd.errors.EmptyDataError, pd.errors.ParserError):
-        return pd.DataFrame(columns=["name", "smiles", "role"])
+# ==================== CLIENT INSTANCE ====================
+# A single PubChemClient instance for the PI family.
+# Phase 5 imports this object directly and calls
+# ``PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")``.
 
-
-# prevents the final tool from crashing when updating the CSV
-def _append_molecule(path: Path, name: str, smiles: str, role: str) -> None:
-    '''Thread-safe append with case-insensitive dedup.'''
-    with _CSV_LOCK:
-        df = _load_csv_safe(path)
-        if not df.empty and (df["name"].astype(str).str.lower() == name.lower()).any():
-            return  # already there
-        df = pd.concat(
-            [df, pd.DataFrame([[name, smiles, role]], columns=["name", "smiles", "role"])],
-            ignore_index=True,
-        )
-        df.to_csv(path, index=False)
-
-
-# ==================== CACHE FUNCTIONS ====================
-
-def load_cache():
-    if CACHE_FILE.exists():
-        return pd.read_csv(CACHE_FILE)
-    return pd.DataFrame(columns=["name", "smiles"])
-
-def save_cache(df):
-    df.to_csv(CACHE_FILE, index=False)
-
-def _save_to_cache(cache_df, name, smiles):
-    """Helper function to save a found SMILES to cache."""
-    if name and smiles:
-        new_row = pd.DataFrame([[name, smiles]], columns=["name", "smiles"])
-        updated_df = pd.concat([cache_df, new_row], ignore_index=True)
-        save_cache(updated_df)
-
-
-# ==================== FUNCTIONS ====================
-
-def get_smiles_from_cid(cid):
-    """Retrieves the Canonical SMILES for a CID using the PubChem REST API."""
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/CanonicalSMILES/TXT"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            smiles = response.text.strip()
-            return smiles if smiles else None
-    except Exception as e:
-        print(f'    [API ERROR] {e}')
-    return None
-
-def get_cid_from_name(name):
-    """Retrieves the CID of a compound given its name, using the REST API."""
-    url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{name}/cids/TXT"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            cids = response.text.strip().split()
-            if cids:
-                return int(cids[0])
-    except Exception as e:
-        print(f'    [API ERROR] {e}')
-    return None
-
-def get_smiles_robust(primary_names, alt_name=None):
-    """
-    Search for the SMILES:
-    1. Check cache first.
-    2. Try each primary_name (manual fallback + API).
-    3. If that fails, try the alt_name.
-    4. Save to cache when found.
-    """
-    # 1. LOAD CACHE
-    cache_df = load_cache()
-
-    # 2. CHECK CACHE FIRST
-    for name in primary_names + ([alt_name] if alt_name else []):
-        if name and name in cache_df['name'].values:
-            print(f'    [CACHE] Found {name} in cache')
-            return cache_df[cache_df['name'] == name]['smiles'].iloc[0], name
-
-    # 3. MANUAL FALLBACK DICTIONARY
-    # moved above, after CACHE_FILE 
-    manual_smiles = MANUAL_SMILES
-
-    # 4. SEARCH PRIMARY NAMES
-    for primary in primary_names:
-        print(f'Searching for {primary}...')
-
-        # Manual fallback
-        if primary in manual_smiles:
-            smiles = manual_smiles[primary]
-            used_name = primary
-            print(f'    [OK] Found in manual fallback')
-            _save_to_cache(cache_df, used_name, smiles)
-            return smiles, used_name
-
-        # API search (get CID from name)
-        cid = get_cid_from_name(primary)
-        if cid:
-            smiles = get_smiles_from_cid(cid)
-            if smiles:
-                used_name = primary
-                print(f'    [OK] Found via CID {cid}')
-                _save_to_cache(cache_df, used_name, smiles)
-                return smiles, used_name
-            else:
-                print(f'    [WARN] CID {cid} has no SMILES')
-        else:
-            print(f'    [WARN] No CID found for {primary}')
-
-    # 5. FALLBACK ON ALT_NAME (IUPAC)
-    if alt_name:
-        print(f'    [INFO] Fallback on {alt_name}...')
-
-        if alt_name in manual_smiles:
-            smiles = manual_smiles[alt_name]
-            used_name = alt_name
-            print(f'    [OK] Found in manual fallback')
-            _save_to_cache(cache_df, used_name, smiles)
-            return smiles, used_name
-
-        cid = get_cid_from_name(alt_name)
-        if cid:
-            smiles = get_smiles_from_cid(cid)
-            if smiles:
-                used_name = alt_name
-                print(f'    [OK] Found via CID {cid}')
-                _save_to_cache(cache_df, used_name, smiles)
-                return smiles, used_name
-            else:
-                print(f'    [WARN] CID {cid} has no SMILES')
-        else:
-            print(f'    [WARN] No CID found for {alt_name}')
-
-    # 6. NOT FOUND
-    print(f'    No SMILES found for {", ".join(primary_names)} nor {alt_name}; molecule skipped.')
-    return None, None
+PI_CLIENT = PubChemClient(
+    manual_smiles=MANUAL_SMILES,
+    cache_file=CACHE_FILE,
+    output_csv=OUTPUT_PI_CSV,
+)
 
 
 # ==================== MOLECULES LIST ====================
@@ -233,8 +103,7 @@ def get_smiles_robust(primary_names, alt_name=None):
 '''
 IMPORTANT!
 When adding new PIs, specify trade name(s) as `primary_names` and
-insert value None as `alt_name`,
-or viceversa.
+insert value None as `alt_name`, or viceversa.
 '''
 
 molecules_config = [
@@ -308,38 +177,20 @@ molecules_config = [
 ]
 
 
-# ==================== SINGLE-MOLECULE FETCH (for Phase 5) ====================
+# ==================== BACKWARD-COMPAT WRAPPER ====================
 def fetch_single_PI(name: str) -> str | None:
     '''
-    Fetch a single photoinitiator by name:
-    1. Search the CSV (molecules_PIs.csv).
-    2. If not found, call get_smiles_robust([name], None).
-    3. If found, append to the CSV.
-    4. Return the SMILES (or None if not found).
+    Legacy thin wrapper. 
+    Returns only the SMILES string (or ``None``).
+
+    Kept for backward compatibility with any Phase 1 code that still
+    imports it. 
+    New code (Phase 5) should call
+    ``PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")`` directly
+    to get the full ``{"name", "smiles", "role"}`` dict.
     '''
-    # 1. Look up in the existing CSV
-    if OUTPUT_PI_CSV.exists():
-        df = pd.read_csv(OUTPUT_PI_CSV)
-        match = df[df["name"].str.lower() == name.lower()]
-        if not match.empty:
-            return match.iloc[0]["smiles"]
-
-    # 2. Not in CSV → fetch from PubChem via the existing function
-    smiles, used_name = get_smiles_robust([name], None)
-    if smiles is None:
-        return None
-
-    # 3. Append the new molecule to the CSV
-    new_row = pd.DataFrame([[used_name, smiles, "PI_TypeI"]],
-                           columns=["name", "smiles", "role"])
-    if OUTPUT_PI_CSV.exists():
-        df = pd.read_csv(OUTPUT_PI_CSV)
-        df = pd.concat([df, new_row], ignore_index=True)
-    else:
-        df = new_row
-    df.to_csv(OUTPUT_PI_CSV, index=False)
-    
-    return smiles
+    result = PI_CLIENT.fetch_single_molecule(name, role="PI_TypeI")
+    return result["smiles"] if result else None
 
 
 # ==================== MAIN EXECUTION ====================
@@ -353,42 +204,32 @@ def main():
     --------
     1. Iterate over ``molecules_config`` (list of dicts, each with
        ``primary_names``, optional ``alt_name`` and ``role``).
-    2. For each entry, call :func:`get_smiles_robust`, which resolves the
-       SMILES using, in order of preference:
-         (a) the local cache ``data/smiles_cache_PIs.csv`` (no network I/O),
-         (b) the manual fallback dictionary of pre-verified SMILES,
-         (c) the PubChem PUG REST API (name → CID → CanonicalSMILES).
+    2. For each entry, call :meth:`PubChemClient.get_smiles_robust`,
+       which resolves the SMILES using, in order of preference:
+         (a) the local cache ``data/smiles_cache_PIs.csv``,
+         (b) the manual fallback dictionary ``MANUAL_SMILES``,
+         (c) the PubChem PUG REST API (name -> CID -> CanonicalSMILES).
     3. Collect one record per molecule: ``{"name", "smiles", "role"}``.
-    4. Write the resulting table to ``data/molecules_PIs.csv`` (the file is
-       fully overwritten on every run so that it always reflects the current
-       configuration).
-    5. Print a summary report (found / total, list of missing molecules) and
-       a preview of the first 10 rows.
+    4. Overwrite ``data/molecules_PIs.csv`` (fully rewritten every run,
+       so it always reflects the current configuration).
+    5. Print a summary (found / total, list of missing molecules) and a
+       preview of the first 10 rows.
 
     Reads
     -----
     - Module constant ``molecules_config``.
-    - ``data/smiles_cache_PIs.csv`` via :func:`load_cache` (for each molecule).
+    - ``data/smiles_cache_PIs.csv`` (via ``PI_CLIENT``).
 
     Writes
     ------
     - ``data/molecules_PIs.csv``     — final dataset consumed by Phases 2–5.
     - ``data/smiles_cache_PIs.csv``  — updated on every successful lookup.
 
-    Side effects
-    ------------
-    - Issues HTTP requests to the PubChem PUG REST API.
-    - Prints progress and diagnostics to stdout.
-
     Notes
     -----
-    - Must be re-run every time ``molecules_config`` is modified so that the
-      CSV stays in sync with the configuration (this is why the file is
-      rewritten, not appended to).
-    - This is the *batch* entry point used in Phase 1. For the single-molecule,
-      on-demand lookup required by Phase 5 (Reflex web app), use
-      :func:`fetch_single_PI` instead.
-    - Returns ``None``; all results are persisted to disk.
+    Must be run from the project root:
+        ``python -m phase1.fetch_molecules_PIs``
+    Re-run every time ``molecules_config`` changes.
     '''
     print('Starting fetching SMILES using PubChem REST API + manual fallback...')
     print(f'Total molecules to process: {len(molecules_config)}\n')
@@ -401,12 +242,11 @@ def main():
 
         print(f'[{idx}/{len(molecules_config)}] Processing: {", ".join(primary_names)} (role: {role})')
 
-        smiles, used_name = get_smiles_robust(primary_names, alt)
+        smiles, used_name = PI_CLIENT.get_smiles_robust(primary_names, alt)
         if smiles is not None:
             print(f'    DEBUG: smiles = {smiles[:60]}...')
         else:
             print(f'    DEBUG: smiles = None')
-
         results.append({
             "name": used_name if used_name else primary_names[0],
             "smiles": smiles,
@@ -428,6 +268,9 @@ def main():
     print('\nPreview of generated CSV:')
     print(df_final.head(10).to_string())
 
+
+if __name__ == "__main__":
+    main()
 
 '''
 ========================================================================
