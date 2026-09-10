@@ -1,0 +1,209 @@
+name,smiles,role,augment
+Irgacure 651,COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Irgacure 651,COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Irgacure 651,COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Irgacure 651,COC(OC)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Darocur 1173,CC(C)(O)C(=O)C1=CC=CC=C1,PI_TypeI,orig
+Darocur 1173,CC(C)(O)C(=O)C1=CC=CC=C1,PI_TypeI,rot90
+Darocur 1173,CC(C)(O)C(=O)C1=CC=CC=C1,PI_TypeI,rot180
+Darocur 1173,CC(C)(O)C(=O)C1=CC=CC=C1,PI_TypeI,rot270
+Irgacure 184,OC1(CCCCC1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Irgacure 184,OC1(CCCCC1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Irgacure 184,OC1(CCCCC1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Irgacure 184,OC1(CCCCC1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Irgacure 369,CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3,PI_TypeI,orig
+Irgacure 369,CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3,PI_TypeI,rot90
+Irgacure 369,CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3,PI_TypeI,rot180
+Irgacure 369,CN(C)C(CC1=CC=CC=C1)(C(=O)C2=CC=CC=C2)N3CCOCC3,PI_TypeI,rot270
+Irgacure 907,CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Irgacure 907,CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Irgacure 907,CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Irgacure 907,CC1=CC=C(C=C1)SC(C)(C)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+TPO,CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+TPO,CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+TPO,CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+TPO,CC(C)(C)P(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+TPO-L,CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+TPO-L,CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+TPO-L,CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+TPO-L,CCOP(=O)(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Irgacure 819,CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Irgacure 819,CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Irgacure 819,CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Irgacure 819,CC(C)(C)P(=O)(C(=O)C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Benzoin methyl ether,COC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Benzoin methyl ether,COC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Benzoin methyl ether,COC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Benzoin methyl ether,COC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Benzoin ethyl ether,CCOC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Benzoin ethyl ether,CCOC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Benzoin ethyl ether,CCOC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Benzoin ethyl ether,CCOC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Benzoin isopropyl ether,CC(C)OC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,orig
+Benzoin isopropyl ether,CC(C)OC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot90
+Benzoin isopropyl ether,CC(C)OC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot180
+Benzoin isopropyl ether,CC(C)OC(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeI,rot270
+Irgacure 2959,CC(C)(C(=O)C1=CC=C(C=C1)OCCO)O,PI_TypeI,orig
+Irgacure 2959,CC(C)(C(=O)C1=CC=C(C=C1)OCCO)O,PI_TypeI,rot90
+Irgacure 2959,CC(C)(C(=O)C1=CC=C(C=C1)OCCO)O,PI_TypeI,rot180
+Irgacure 2959,CC(C)(C(=O)C1=CC=C(C=C1)OCCO)O,PI_TypeI,rot270
+Irgacure 784,C1C=CC=C1.C1C=CC=C1.C1=CN(C=C1)C2C=CC(=C=C2F)F.C1=CN(C=C1)C2C=CC(=C=C2F)F.[Ti],PI_TypeI,orig
+Irgacure 784,C1C=CC=C1.C1C=CC=C1.C1=CN(C=C1)C2C=CC(=C=C2F)F.C1=CN(C=C1)C2C=CC(=C=C2F)F.[Ti],PI_TypeI,rot90
+Irgacure 784,C1C=CC=C1.C1C=CC=C1.C1=CN(C=C1)C2C=CC(=C=C2F)F.C1=CN(C=C1)C2C=CC(=C=C2F)F.[Ti],PI_TypeI,rot180
+Irgacure 784,C1C=CC=C1.C1C=CC=C1.C1=CN(C=C1)C2C=CC(=C=C2F)F.C1=CN(C=C1)C2C=CC(=C=C2F)F.[Ti],PI_TypeI,rot270
+Benzophenone,O=C(C1=CC=CC=C1)C2=CC=CC=C2,PI_TypeII,orig
+Benzophenone,O=C(C1=CC=CC=C1)C2=CC=CC=C2,PI_TypeII,rot90
+Benzophenone,O=C(C1=CC=CC=C1)C2=CC=CC=C2,PI_TypeII,rot180
+Benzophenone,O=C(C1=CC=CC=C1)C2=CC=CC=C2,PI_TypeII,rot270
+4-Methylbenzophenone,CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2,PI_TypeII,orig
+4-Methylbenzophenone,CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot90
+4-Methylbenzophenone,CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot180
+4-Methylbenzophenone,CC1=CC=C(C=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot270
+4-Phenylbenzophenone,C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3,PI_TypeII,orig
+4-Phenylbenzophenone,C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3,PI_TypeII,rot90
+4-Phenylbenzophenone,C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3,PI_TypeII,rot180
+4-Phenylbenzophenone,C1=CC=C(C=C1)C2=CC=C(C=C2)C(=O)C3=CC=CC=C3,PI_TypeII,rot270
+Methyl o-benzoylbenzoate,COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2,PI_TypeII,orig
+Methyl o-benzoylbenzoate,COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2,PI_TypeII,rot90
+Methyl o-benzoylbenzoate,COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2,PI_TypeII,rot180
+Methyl o-benzoylbenzoate,COC(=O)C1=CC=CC=C1C(=O)C2=CC=CC=C2,PI_TypeII,rot270
+ITX,CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2,PI_TypeII,orig
+ITX,CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2,PI_TypeII,rot90
+ITX,CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2,PI_TypeII,rot180
+ITX,CC(C)C1=CC2=C(C=C1)C(=O)C3=CC=CC=C3S2,PI_TypeII,rot270
+TX,COC1=CC(=CC(=C1OC)OC)C(=O)N2CCOCC2,PI_TypeII,orig
+TX,COC1=CC(=CC(=C1OC)OC)C(=O)N2CCOCC2,PI_TypeII,rot90
+TX,COC1=CC(=CC(=C1OC)OC)C(=O)N2CCOCC2,PI_TypeII,rot180
+TX,COC1=CC(=CC(=C1OC)OC)C(=O)N2CCOCC2,PI_TypeII,rot270
+DETX,CCC1=CC(=C2C(=C1)C(=O)C3=CC=CC=C3S2)CC,PI_TypeII,orig
+DETX,CCC1=CC(=C2C(=C1)C(=O)C3=CC=CC=C3S2)CC,PI_TypeII,rot90
+DETX,CCC1=CC(=C2C(=C1)C(=O)C3=CC=CC=C3S2)CC,PI_TypeII,rot180
+DETX,CCC1=CC(=C2C(=C1)C(=O)C3=CC=CC=C3S2)CC,PI_TypeII,rot270
+Camphorquinone,CC1(C)C2CC1C(=O)C2=O,PI_TypeII,orig
+Camphorquinone,CC1(C)C2CC1C(=O)C2=O,PI_TypeII,rot90
+Camphorquinone,CC1(C)C2CC1C(=O)C2=O,PI_TypeII,rot180
+Camphorquinone,CC1(C)C2CC1C(=O)C2=O,PI_TypeII,rot270
+Benzil,O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeII,orig
+Benzil,O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot90
+Benzil,O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot180
+Benzil,O=C(C1=CC=CC=C1)C(=O)C2=CC=CC=C2,PI_TypeII,rot270
+Anthraquinone,O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,orig
+Anthraquinone,O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot90
+Anthraquinone,O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot180
+Anthraquinone,O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot270
+"9,10-Phenanthrenequinone",O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,orig
+"9,10-Phenanthrenequinone",O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot90
+"9,10-Phenanthrenequinone",O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot180
+"9,10-Phenanthrenequinone",O=C1C2=CC=CC=C2C(=O)C3=CC=CC=C13,PI_TypeII,rot270
+Acridone,O=C1C2=CC=CC=C2NC3=CC=CC=C13,PI_TypeII,orig
+Acridone,O=C1C2=CC=CC=C2NC3=CC=CC=C13,PI_TypeII,rot90
+Acridone,O=C1C2=CC=CC=C2NC3=CC=CC=C13,PI_TypeII,rot180
+Acridone,O=C1C2=CC=CC=C2NC3=CC=CC=C13,PI_TypeII,rot270
+Michler's ketone,CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C,PI_TypeII,orig
+Michler's ketone,CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C,PI_TypeII,rot90
+Michler's ketone,CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C,PI_TypeII,rot180
+Michler's ketone,CN(C)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(C)C,PI_TypeII,rot270
+"4,4'-Bis(diethylamino)benzophenone",CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC,PI_TypeII,orig
+"4,4'-Bis(diethylamino)benzophenone",CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC,PI_TypeII,rot90
+"4,4'-Bis(diethylamino)benzophenone",CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC,PI_TypeII,rot180
+"4,4'-Bis(diethylamino)benzophenone",CCN(CC)C1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)N(CC)CC,PI_TypeII,rot270
+Eosin Y,C1=CC=C(C(=C1)C2=C3C=C(C(=O)C(=C3OC4=C(C(=C(C=C24)Br)[O-])Br)Br)Br)C(=O)[O-].[Na+].[Na+],PI_TypeII,orig
+Eosin Y,C1=CC=C(C(=C1)C2=C3C=C(C(=O)C(=C3OC4=C(C(=C(C=C24)Br)[O-])Br)Br)Br)C(=O)[O-].[Na+].[Na+],PI_TypeII,rot90
+Eosin Y,C1=CC=C(C(=C1)C2=C3C=C(C(=O)C(=C3OC4=C(C(=C(C=C24)Br)[O-])Br)Br)Br)C(=O)[O-].[Na+].[Na+],PI_TypeII,rot180
+Eosin Y,C1=CC=C(C(=C1)C2=C3C=C(C(=O)C(=C3OC4=C(C(=C(C=C24)Br)[O-])Br)Br)Br)C(=O)[O-].[Na+].[Na+],PI_TypeII,rot270
+Methylene blue,CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2.[Cl-],PI_TypeII,orig
+Methylene blue,CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2.[Cl-],PI_TypeII,rot90
+Methylene blue,CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2.[Cl-],PI_TypeII,rot180
+Methylene blue,CN(C)C1=CC2=C(C=C1)N=C3C=CC(=[N+](C)C)C=C3S2.[Cl-],PI_TypeII,rot270
+Rose bengal,C1=C2C(=C3C=C(C(=O)C(=C3OC2=C(C(=C1I)[O-])I)I)I)C4=C(C(=C(C(=C4Cl)Cl)Cl)Cl)C(=O)[O-].[K+].[K+],PI_TypeII,orig
+Rose bengal,C1=C2C(=C3C=C(C(=O)C(=C3OC2=C(C(=C1I)[O-])I)I)I)C4=C(C(=C(C(=C4Cl)Cl)Cl)Cl)C(=O)[O-].[K+].[K+],PI_TypeII,rot90
+Rose bengal,C1=C2C(=C3C=C(C(=O)C(=C3OC2=C(C(=C1I)[O-])I)I)I)C4=C(C(=C(C(=C4Cl)Cl)Cl)Cl)C(=O)[O-].[K+].[K+],PI_TypeII,rot180
+Rose bengal,C1=C2C(=C3C=C(C(=O)C(=C3OC2=C(C(=C1I)[O-])I)I)I)C4=C(C(=C(C(=C4Cl)Cl)Cl)Cl)C(=O)[O-].[K+].[K+],PI_TypeII,rot270
+Triethylamine,CCN(CC)CC,co-initiator,orig
+Triethylamine,CCN(CC)CC,co-initiator,rot90
+Triethylamine,CCN(CC)CC,co-initiator,rot180
+Triethylamine,CCN(CC)CC,co-initiator,rot270
+TEOA,C(CO)N(CCO)CCO,co-initiator,orig
+TEOA,C(CO)N(CCO)CCO,co-initiator,rot90
+TEOA,C(CO)N(CCO)CCO,co-initiator,rot180
+TEOA,C(CO)N(CCO)CCO,co-initiator,rot270
+MDEA,CN(CCO)CCO,co-initiator,orig
+MDEA,CN(CCO)CCO,co-initiator,rot90
+MDEA,CN(CCO)CCO,co-initiator,rot180
+MDEA,CN(CCO)CCO,co-initiator,rot270
+DMAE,CN(C)CCO,co-initiator,orig
+DMAE,CN(C)CCO,co-initiator,rot90
+DMAE,CN(C)CCO,co-initiator,rot180
+DMAE,CN(C)CCO,co-initiator,rot270
+DMBA,CC1=C2C=CC3=CC=CC=C3C2=C(C4=CC=CC=C14)C,co-initiator,orig
+DMBA,CC1=C2C=CC3=CC=CC=C3C2=C(C4=CC=CC=C14)C,co-initiator,rot90
+DMBA,CC1=C2C=CC3=CC=CC=C3C2=C(C4=CC=CC=C14)C,co-initiator,rot180
+DMBA,CC1=C2C=CC3=CC=CC=C3C2=C(C4=CC=CC=C14)C,co-initiator,rot270
+N-Phenyldiethanolamine,C1=CC=C(C=C1)N(CCO)CCO,co-initiator,orig
+N-Phenyldiethanolamine,C1=CC=C(C=C1)N(CCO)CCO,co-initiator,rot90
+N-Phenyldiethanolamine,C1=CC=C(C=C1)N(CCO)CCO,co-initiator,rot180
+N-Phenyldiethanolamine,C1=CC=C(C=C1)N(CCO)CCO,co-initiator,rot270
+DIPEA,CCN(C(C)C)C(C)C,co-initiator,orig
+DIPEA,CCN(C(C)C)C(C)C,co-initiator,rot90
+DIPEA,CCN(C(C)C)C(C)C,co-initiator,rot180
+DIPEA,CCN(C(C)C)C(C)C,co-initiator,rot270
+DABCO,C1CN2CCN1CC2,co-initiator,orig
+DABCO,C1CN2CCN1CC2,co-initiator,rot90
+DABCO,C1CN2CCN1CC2,co-initiator,rot180
+DABCO,C1CN2CCN1CC2,co-initiator,rot270
+EDB,C(CBr)Br,co-initiator,orig
+EDB,C(CBr)Br,co-initiator,rot90
+EDB,C(CBr)Br,co-initiator,rot180
+EDB,C(CBr)Br,co-initiator,rot270
+2-Ethylhexyl 4-(dimethylamino)benzoate,CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,orig
+2-Ethylhexyl 4-(dimethylamino)benzoate,CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot90
+2-Ethylhexyl 4-(dimethylamino)benzoate,CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot180
+2-Ethylhexyl 4-(dimethylamino)benzoate,CCCCC(CC)COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot270
+Methyl 4-(dimethylamino)benzoate,COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,orig
+Methyl 4-(dimethylamino)benzoate,COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot90
+Methyl 4-(dimethylamino)benzoate,COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot180
+Methyl 4-(dimethylamino)benzoate,COC(=O)C1=CC=C(C=C1)N(C)C,co-initiator,rot270
+BDB,CCC(CC1=CC2=C(C=C1)OCO2)N,co-initiator,orig
+BDB,CCC(CC1=CC2=C(C=C1)OCO2)N,co-initiator,rot90
+BDB,CCC(CC1=CC2=C(C=C1)OCO2)N,co-initiator,rot180
+BDB,CCC(CC1=CC2=C(C=C1)OCO2)N,co-initiator,rot270
+4-(Dimethylamino)benzoic acid,CN(C)C1=CC=C(C=C1)C(=O)O,co-initiator,orig
+4-(Dimethylamino)benzoic acid,CN(C)C1=CC=C(C=C1)C(=O)O,co-initiator,rot90
+4-(Dimethylamino)benzoic acid,CN(C)C1=CC=C(C=C1)C(=O)O,co-initiator,rot180
+4-(Dimethylamino)benzoic acid,CN(C)C1=CC=C(C=C1)C(=O)O,co-initiator,rot270
+DMAB,CN(C)C1=CC=C(C=C1)N=NC2=CC=CC=C2,co-initiator,orig
+DMAB,CN(C)C1=CC=C(C=C1)N=NC2=CC=CC=C2,co-initiator,rot90
+DMAB,CN(C)C1=CC=C(C=C1)N=NC2=CC=CC=C2,co-initiator,rot180
+DMAB,CN(C)C1=CC=C(C=C1)N=NC2=CC=CC=C2,co-initiator,rot270
+2-Mercaptoethanol,OCCS,co-initiator,orig
+2-Mercaptoethanol,OCCS,co-initiator,rot90
+2-Mercaptoethanol,OCCS,co-initiator,rot180
+2-Mercaptoethanol,OCCS,co-initiator,rot270
+Thioglycolic acid,O=C(O)CS,co-initiator,orig
+Thioglycolic acid,O=C(O)CS,co-initiator,rot90
+Thioglycolic acid,O=C(O)CS,co-initiator,rot180
+Thioglycolic acid,O=C(O)CS,co-initiator,rot270
+Ethyl thioglycolate,CCOC(=O)CS,co-initiator,orig
+Ethyl thioglycolate,CCOC(=O)CS,co-initiator,rot90
+Ethyl thioglycolate,CCOC(=O)CS,co-initiator,rot180
+Ethyl thioglycolate,CCOC(=O)CS,co-initiator,rot270
+PETMP,C(CS)C(=O)OCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,orig
+PETMP,C(CS)C(=O)OCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot90
+PETMP,C(CS)C(=O)OCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot180
+PETMP,C(CS)C(=O)OCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot270
+Trimethylolpropane tris(3-mercaptopropionate),CCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,orig
+Trimethylolpropane tris(3-mercaptopropionate),CCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot90
+Trimethylolpropane tris(3-mercaptopropionate),CCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot180
+Trimethylolpropane tris(3-mercaptopropionate),CCC(COC(=O)CCS)(COC(=O)CCS)COC(=O)CCS,co-initiator,rot270
+HDT,C1=CC=[N+]2C(=C1)NC=C2C3=NC(=NC=C3)NC4=CC=C(C=C4)S(=O)(=O)N,co-initiator,orig
+HDT,C1=CC=[N+]2C(=C1)NC=C2C3=NC(=NC=C3)NC4=CC=C(C=C4)S(=O)(=O)N,co-initiator,rot90
+HDT,C1=CC=[N+]2C(=C1)NC=C2C3=NC(=NC=C3)NC4=CC=C(C=C4)S(=O)(=O)N,co-initiator,rot180
+HDT,C1=CC=[N+]2C(=C1)NC=C2C3=NC(=NC=C3)NC4=CC=C(C=C4)S(=O)(=O)N,co-initiator,rot270
+Anthracene,C1=CC=C2C=C3C=CC=CC3=CC2=C1,co-initiator,orig
+Anthracene,C1=CC=C2C=C3C=CC=CC3=CC2=C1,co-initiator,rot90
+Anthracene,C1=CC=C2C=C3C=CC=CC3=CC2=C1,co-initiator,rot180
+Anthracene,C1=CC=C2C=C3C=CC=CC3=CC2=C1,co-initiator,rot270
+Perylene,C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1,co-initiator,orig
+Perylene,C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1,co-initiator,rot90
+Perylene,C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1,co-initiator,rot180
+Perylene,C1=CC2=C3C=CC=CC3=C4C=CC=CC4=C2C=C1,co-initiator,rot270
