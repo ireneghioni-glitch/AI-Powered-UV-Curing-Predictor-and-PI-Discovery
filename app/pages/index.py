@@ -20,11 +20,11 @@ def _input_section() -> rx.Component:
         rx.vstack(
             rx.heading("Input parameters", size="4", margin_bottom="2"),
 
-            rx.text("Photoinitiator name", font_weight="bold"),
+            rx.text("Photoinitiator name or CAS number", font_weight="bold"),
             rx.input(
                 name="pi_name",
                 default_value=PredictorState.pi_name,
-                placeholder="e.g. Benzophenone",
+                placeholder="e.g. Benzophenone or 119-61-9",
                 width="100%",
             ),
 
@@ -32,7 +32,7 @@ def _input_section() -> rx.Component:
             rx.input(
                 name="monomer_name",
                 default_value=PredictorState.monomer_name,
-                placeholder="e.g. Acrylic acid",
+                placeholder="e.g. Acrylic acid or or 79-10-7",
                 width="100%",
             ),
 

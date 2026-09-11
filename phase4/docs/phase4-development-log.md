@@ -358,3 +358,25 @@ Currently, monomer reactivity factors are static. In the future, we plan to:
 * ✅ Saves the trained model for use in Phase 5.
 
 **Current status**: Ready for Phase 5 (Reactive Web App with Reflex).
+
+---
+
+### Simulation v2 — Chemically informed
+
+Following the implementation of the Full Factorial Design, the simulation
+function was refined with input from an expert formulator:
+
+1. **PI concentration**: the previously ignored variable was replaced with a
+   bell-shaped (gamma) curve peaking at 3%. This captures the UV-shielding
+   effect observed at high concentrations (Beer-Lambert law).
+
+2. **Medium compatibility**: the Boolean penalty was replaced with a continuous
+   exponential factor based on polarity matching (PI LogP vs. the medium's
+   actual LogP). This models the "like dissolves like" principle for all
+   PIs, not just those used in water.
+
+3. **Elimination of hardcoded thresholds**: chemistry is now modeled using
+   continuous functions rather than step-like if/else logic.
+
+The XGBoost model will thus be able to learn the actual interactions
+between concentration, medium, and molecular properties.

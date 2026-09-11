@@ -6,6 +6,6 @@
   "colsample_bytree": 0.8,
   "reg_alpha": 0.1,
   "reg_lambda": 1.0,
-  "input_dim": 64,
-  "n_samples": 520000
+  "input_dim": 2564,
+  "n_samples": 8320
 }

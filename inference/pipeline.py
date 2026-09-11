@@ -37,6 +37,8 @@ from shared.molecule_images import smiles_to_grayscale, IMG_SIZE
 BASE_DIR = Path(__file__).resolve().parent.parent
 PHASE4 = BASE_DIR / "phase4"
 XGBOOST_MODEL_PATH = PHASE4 / "xgboost_model.json"
+PCA_PI_PATH = BASE_DIR / "phase4" / "pca_pi.pkl"
+PCA_MONO_PATH = BASE_DIR / "phase4" / "pca_mono.pkl"
 
 
 # ==================== LAZY SINGLETONS ====================
@@ -83,6 +85,23 @@ def _get_xgboost():
         _xgboost_model.load_model(str(XGBOOST_MODEL_PATH))
     return _xgboost_model
 
+_pca_pi = None
+_pca_mono = None
+
+def _get_pca_pi():
+    global _pca_pi
+    if _pca_pi is None:
+        import joblib
+        _pca_pi = joblib.load(PCA_PI_PATH)
+    return _pca_pi
+
+def _get_pca_mono():
+    global _pca_mono
+    if _pca_mono is None:
+        import joblib
+        _pca_mono = joblib.load(PCA_MONO_PATH)
+    return _pca_mono
+
 
 # ==================== PIPELINE STEPS ====================
 
@@ -109,6 +128,27 @@ def image_to_embedding(image: np.ndarray) -> np.ndarray:
     batch = preprocess_input(batch)
     embedding = _get_mobilenet().predict(batch, verbose=0)    # (1,1280)
     return embedding[0]
+
+def smiles_to_averaged_embedding(smiles: str) -> np.ndarray:
+    '''
+    Compute a 1280-D embedding for a SMILES, averaged over 4 rotations.
+
+    During training, embeddings were averaged over the 4 augmentations
+    (original + 90°/180°/270° rotations). To keep the inference input
+    in-distribution, we apply the same averaging here.
+
+    Returns shape (1280,).
+    '''
+    img = smiles_to_grayscale(smiles)
+    # Original + 3 rotations (same as Phase 1 augmentation)
+    h, w = img.shape
+    center = (w // 2, h // 2)
+    rotations = [img]
+    for angle in (90, 180, 270):
+        M = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotations.append(cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_LINEAR))
+    embeddings = np.stack([image_to_embedding(r) for r in rotations], axis=0)
+    return embeddings.mean(axis=0)
 
 
 # ==================== PUBLIC ENTRY POINT ====================
@@ -142,18 +182,18 @@ def predict(
     float
         Predicted double-bond conversion in percent, clipped to [0, 100].
     '''
-    # Phase 1 -> 2: SMILES -> embedding (1280-D each)
-    pi_img = smiles_to_grayscale(pi_smiles)
-    mono_img = smiles_to_grayscale(monomer_smiles)
-    pi_emb = image_to_embedding(pi_img)
-    mono_emb = image_to_embedding(mono_img)
+    # Phase 1 -> 2: SMILES -> averaged embedding -> PCA (matches training)
+    pi_emb_raw = smiles_to_averaged_embedding(pi_smiles)      # (1280,)
+    mono_emb_raw = smiles_to_averaged_embedding(monomer_smiles)
 
-    # Phase 4: concatenate [1280 | 1280 | 4] = 2564 features
+    pi_emb = _get_pca_pi().transform(pi_emb_raw.reshape(1, -1))[0]       # (51,)
+    mono_emb = _get_pca_mono().transform(mono_emb_raw.reshape(1, -1))[0] # (9,)
+
+    # Phase 4: concatenate [51 | 9 | 4] = 64 features
     features = np.concatenate([
         pi_emb, mono_emb,
         [is_aqueous, logp, pi_concentration, uv_dose],
     ]).reshape(1, -1)
 
-    # Phase 4: predict
     raw = float(_get_xgboost().predict(features)[0])
     return float(np.clip(raw, 0.0, 100.0))
