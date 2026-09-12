@@ -8,7 +8,8 @@
 [![XGBoost](https://img.shields.io/badge/XGBoost-Machine_Learning-2887D7?style=for-the-badge)](https://xgboost.readthedocs.io/)
 [![RDKit](https://img.shields.io/badge/RDKit-Cheminformatics-3838FF?style=for-the-badge&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAFVBMVEXc3NwUFP8UPP9kZP+MjP+0tP////9ZXZotAAAAAXRSTlMAQObYZgAAAAFiS0dEBmFmuH0AAAAHdElNRQfmAwsPGi+MyC9RAAAAQElEQVQI12NgQABGQUEBMENISUkRLKBsbGwEEhIyBgJFsICLC0iIUdnExcUZwnANQWfApKCK4doRBsKtQFgKAQC5Ww1JEHSEkAAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMjowMy0xMVQxNToyNjo0NyswMDowMDzr2J4AAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjItMDMtMTFUMTU6MjY6NDcrMDA6MDBNtmAiAAAAAElFTkSuQmCC)](https://www.rdkit.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-Deep_Learning-DC2626?style=for-the-badge&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![BeCode Bootcamp](https://img.shields.io/badge/BeCode-AI_%26_Data_Science-46C3C6?style=for-the-badge)](https://becode.org/)
+[![BeCode Bootcamp](https://img.shields.io/badge/BeCode-AI_%26_Data_Science-46C3C6?style=for-the-badge)](https://becode.org/)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 An end-to-end, full-stack Machine Learning and Cheminformatics platform designed to predict polymerization conversion percentage (**% Double Bond Conversion**) for UV-curable formulations and enable virtual screening for novel Photoinitiator (PI) discovery. Built with a modular 5-phase data pipeline, computer vision feature extraction, XGBoost gradient boosting, and an interactive **Reflex** web application.
 
@@ -283,6 +284,8 @@ The project follows a structured post-MVP roadmap detailed in the `docs/` reposi
 
    None of these items blocks the functional MVP, but together they represent the gap between a working prototype and a product that a formulation chemist would use daily without friction.
 
+<br>
+
 ## Changelog
 
 ### v1.0.0 — 2026-09-12
@@ -292,6 +295,14 @@ First functional MVP release.
 - Reflex web app with lazy singleton inference (<1s warm requests)
 - CAS number support via PubChem synonym lookup
 - SQLModel audit logging of every prediction
+
+<br>
+
+## License
+
+This project is licensed under the MIT License. You are free to use, modify,
+and distribute this software, provided that the original copyright notice
+is included. See the `LICENSE` file for details.
 
 <br>
 
