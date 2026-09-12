@@ -1,0 +1,30 @@
+.web
+assets/external/
+__pycache__/
+.states
+*.db
+molecular_images.npz
+preview.png
+
+# Python
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+venv_reflex/
+.env
+
+# Reflex
+.web/
+.states/
+reflex.lock
+bun.lock
+reflex.db
+app.db
+AGENTS.md
+CLAUDE.md
+
+# OS / editor
+.vscode/
+.idea/
+.DS_Store

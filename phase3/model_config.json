@@ -1,0 +1,6 @@
+{
+  "input_dim": 2560,
+  "hidden1": 128,
+  "hidden2": 64,
+  "output_dim": 1
+}
