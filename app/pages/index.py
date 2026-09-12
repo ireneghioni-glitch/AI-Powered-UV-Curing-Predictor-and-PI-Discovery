@@ -28,7 +28,7 @@ def _input_section() -> rx.Component:
                 width="100%",
             ),
 
-            rx.text("Monomer name", font_weight="bold"),
+            rx.text("Monomer name or CAS number", font_weight="bold"),
             rx.input(
                 name="monomer_name",
                 default_value=PredictorState.monomer_name,
@@ -40,7 +40,7 @@ def _input_section() -> rx.Component:
                 rx.box(
                     rx.text("Environment", font_weight="bold"),
                     rx.select(
-                        ["Solvent", "Aqueous"],
+                        ["Solvent-based", "Water-based"],
                         name="environment",
                         default_value=PredictorState.environment,
                         width="100%",
@@ -136,7 +136,7 @@ def _result_card() -> rx.Component:
         PredictorState.has_result,
         rx.box(
             rx.vstack(
-                rx.heading("Prediction result 📊", size="5"),
+                rx.heading("Prediction result", size="5"),
                 rx.hstack(
                     rx.text("Double-bond conversion:", font_weight="semibold"),
                     rx.text(
@@ -181,9 +181,9 @@ def index() -> rx.Component:
     """The home page."""
     return rx.container(
         rx.vstack(
-            rx.heading("AI-Powered UV-Curing Predictor 🧪", size="8", margin_y="4"),
+            rx.heading("UV-Curing Reactivity Predictor", size="8", margin_y="4"),
             rx.text(
-                "Enter a photoinitiator and a monomer by name. "
+                "Enter a photoinitiator and a monomer by name or CAS number. "
                 "The SMILES are resolved automatically via PubChem, "
                 "then the model predicts the theoretical double-bond conversion.",
                 color_scheme="gray",
